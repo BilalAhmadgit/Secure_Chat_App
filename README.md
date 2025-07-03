@@ -93,12 +93,6 @@ Secure_Chat_Application/
 
 ---
 
-## 📸 Screenshots
-![Desktop Client](https://via.placeholder.com/500x300?text=Tkinter+Desktop+Client)  
-![Web Interface](https://via.placeholder.com/500x300?text=Flask+Web+Chat)
-
----
-
 ## 🔮 Future Enhancements
 - **Perfect Forward Secrecy (PFS)**: Regularly rotate keys for added security.
 - **Group Messaging**: Extend support for multi-user chats.
