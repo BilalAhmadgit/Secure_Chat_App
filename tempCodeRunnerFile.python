@@ -1,0 +1,50 @@
+import streamlit as st
+import requests
+import os
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
+
+SERVER_URL = "https://caboose.proxy.rlwy.net"  # Your Railway app URL
+SECRET_KEY = bytes.fromhex('4a426d15f08f522c376950785fdd2169a6cc80b0cd0c2d6e59a9950e8b739e64')  # SAME as server
+
+def encrypt_message(message):
+    chacha = ChaCha20Poly1305(SECRET_KEY)
+    nonce = os.urandom(12)
+    encrypted = chacha.encrypt(nonce, message.encode(), None)
+    return (nonce + encrypted).hex()
+
+def decrypt_message(hexdata):
+    chacha = ChaCha20Poly1305(SECRET_KEY)
+    data = bytes.fromhex(hexdata)
+    nonce = data[:12]
+    ciphertext = data[12:]
+    decrypted = chacha.decrypt(nonce, ciphertext, None)
+    return decrypted.decode()
+
+def send_message(message):
+    encrypted = encrypt_message(message)
+    response = requests.post(f"{SERVER_URL}/send", json={"message": encrypted})
+    return response.ok
+
+def receive_messages():
+    resp = requests.get(f"{SERVER_URL}/receive")
+    if resp.status_code == 200:
+        encrypted_messages = resp.json()["messages"]
+        return [decrypt_message(msg) for msg in encrypted_messages]
+    return []
+
+# Streamlit UI
+st.title("Secure Chat 🚀")
+
+message = st.text_input("Enter your message:")
+
+if st.button("Send"):
+    if send_message(message):
+        st.success("Message sent successfully!")
+    else:
+        st.error("Failed to send message.")
+
+if st.button("Load Messages"):
+    msgs = receive_messages()
+    st.write("### Chat Messages:")
+    for msg in msgs:
+        st.write(f"- {msg}")
